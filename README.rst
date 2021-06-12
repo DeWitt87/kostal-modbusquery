@@ -39,7 +39,20 @@ Getting started
 
 To use ``kostal-modbusquery`` in a project take a look at the __main__ section in kostal-modbusquery.py how to include it in your environment
 
+Put the `kostal-modbusquery.service` in `/lib/systemd/system/`.
 
+Reload the daemon:
+
+```
+sudo systemctl daemon-reload
+```
+
+Now enable the service to start on system boot, also start the service using the following commands.
+
+```
+sudo systemctl enable dummy.service
+sudo systemctl start dummy.service
+```
 
 Disclaimer
 ----------

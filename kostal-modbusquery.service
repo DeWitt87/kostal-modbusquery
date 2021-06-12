@@ -1,0 +1,13 @@
+[Unit]
+Description=KOSTAL Modbus Query Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 kostal-modbusquery.py
+WorkingDirectory=/home/pi/kostal
+StandardInput=tty-force
+User=pi
+
+[Install]
+WantedBy=multi-user.target
