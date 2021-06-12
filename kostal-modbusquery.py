@@ -122,14 +122,17 @@ from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 #from pprint import pprint
 import time
+from timeloop import Timeloop
+from datetime import timedelta
 import collections
 import argparse
 
+tl = Timeloop()
 
 class kostal_modbusquery:
     def __init__(self):
         #Change the IP address and port to suite your environment:
-        self.inverter_ip="192.168.178.41"
+        self.inverter_ip="192.168.0.40"
         self.inverter_port="1502"
         #No more changes required beyond this point
         self.KostalRegister = []
@@ -265,7 +268,7 @@ class kostal_modbusquery:
         self.Qty = dict()
         for key in self.Adr:
             self.Adr[key].append(None) # initial value
-            self.Qty[self.Adr[key][0]] = self.Adr[key] # to search by name
+            self.Qty[self.Adr[key][0]] = self.Adr[key] # to search by name
 
 
     #-----------------------------------------
@@ -359,6 +362,8 @@ class kostal_modbusquery:
     def run(self):
 
         try:
+            print ("Connect to %s:%s" % (self.inverter_ip,self.inverter_port))
+
             self.client = ModbusTcpClient(self.inverter_ip,
                                           port=self.inverter_port)
             self.client.connect()
@@ -382,7 +387,7 @@ class kostal_modbusquery:
                 elif dtype == "R32":
                     reader = self.ReadFloat
                 else:
-                    raise ValueError("Data type not known: %s"%dtype)
+                    raise ValueError("Data type not known: %s"%dtype)
 
                 val = reader(key)
                 self.Adr[key][2] = val
@@ -400,7 +405,8 @@ class kostal_modbusquery:
             print ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
 
-if __name__ == "__main__":
+@tl.job(interval=timedelta(seconds=5))
+def query_modbus():
     try:
         Kostalquery = kostal_modbusquery()
         print ("Starting QUERY .......... ")
@@ -460,12 +466,12 @@ if __name__ == "__main__":
                 Upperlimit = Kostalquery.WriteR32(1034,args['BatCharge'])
         
                             
-        MQTT_Active = 0
+        MQTT_Active = 1
 
         if MQTT_Active == 1:
             try:
                 import paho.mqtt.client as mqtt
-                broker_address="192.168.178.39"                                                 #IP-Adress of the mqtt broker we subscribe to
+                broker_address="192.168.0.2"                                                 #IP-Adress of the mqtt broker we subscribe to
                 #Publish to mqtt start
                 print ("Now publishing data to MQTT Broker with IP Adress : ", broker_address)
     
@@ -476,9 +482,9 @@ if __name__ == "__main__":
                 if len(params) > 1:
                     for p in sorted(params):
                         #print ("entering Kostal mqtt publish")
-                        print("{:{width}}: {}".format(p, Kostalquery.Qty[p][2], width=(max(params, key=len))))
+                        print("{}:{width}: {}".format(p, Kostalquery.Qty[p][2], width=(max(params, key=len))))
                         TOPIC = ("Haus/Kostal/"+p)
-                        modbusmqttclient.publish(TOPIC,KostalVal[p])
+                        modbusmqttclient.publish(TOPIC,Kostalquery.Qty[p][2])
                 elif len(params) == 1:
                     print(val[params[0]])
                     print ("Nothing received from Kostal... ? ")
@@ -486,6 +492,8 @@ if __name__ == "__main__":
                 print ("Error Kostal MQTT publish", ErrorMQTT)
                 
     except Exception as Badmain:
-        print ("Ran into error executing Main kostal-RESTAPI Routine :", Badmain)                
+        print ("Ran into error executing Main kostal-RESTAPI Routine :", Badmain)
 
 
+if __name__ == "__main__":
+    tl.start(block=True)
