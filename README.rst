@@ -33,6 +33,12 @@ Installation
 ------------
 Clone / Download repo and use kostal-modbusquery.py 
 
+Install required packages::
+
+    pip install pymodbus
+    pip install timeloop
+    pip install paho-mqtt
+
 
 Getting started
 ---------------
