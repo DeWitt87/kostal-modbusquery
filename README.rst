@@ -37,22 +37,26 @@ Clone / Download repo and use kostal-modbusquery.py
 Getting started
 ---------------
 
-To use ``kostal-modbusquery`` in a project take a look at the __main__ section in kostal-modbusquery.py how to include it in your environment
+* Set proper values for `inverter_ip` and `broker_address` in ``kostal-modbusquery.py``.
+* Set proper `WorkingDirectory` in ``kostal-modbusquery.service``.
 
-Put the `kostal-modbusquery.service` in `/lib/systemd/system/`.
 
-Reload the daemon:
+Run as a service
+----------------
 
-```
-sudo systemctl daemon-reload
-```
+* Create symlink::
 
-Now enable the service to start on system boot, also start the service using the following commands.
+    sudo ln -s <path-to-working-directory>/kostal-modbusquery.service /lib/systemd/system/kostal-modbusquery.service
 
-```
-sudo systemctl enable dummy.service
-sudo systemctl start dummy.service
-```
+* Restart service daemon::
+
+    sudo systemctl daemon-reload
+
+* Enable and start service::
+
+    sudo systemctl enable kostal-modbusquery.service
+    sudo systemctl start kostal-modbusquery.service
+
 
 Disclaimer
 ----------
